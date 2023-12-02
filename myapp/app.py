@@ -71,6 +71,7 @@ col_landfill_volume_design = "Designed Volume (acres^3)"
 
 # Use CSS for style
 app = dash.Dash(__name__, external_stylesheets=["/assets/style.css"])
+server = app.server
 
 app.layout = html.Div(
     className="app-container",
