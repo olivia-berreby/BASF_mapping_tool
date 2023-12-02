@@ -11,7 +11,7 @@ import numpy as np
 import os
 
 # set the current directory to myapp
-# os.chdir("myapp")
+os.chdir("myapp")
 
 
 # Load county geojson data
