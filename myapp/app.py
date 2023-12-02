@@ -8,10 +8,8 @@ from urllib.request import urlopen
 import pandas as pd
 from dash import callback_context
 import numpy as np
-import os
 
 
-print(os.listdir())
 # Load county geojson data
 with urlopen(
     "https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json"
@@ -27,7 +25,7 @@ with urlopen(
 # Load data, format; load data, create variables for col names
 
 # Data for plastic generated
-df_plastic_generated = pd.read_excel("./data/MASTER_v3.xlsx")
+df_plastic_generated = pd.read_excel("MASTER_v3.xlsx")
 col_fip_code = "FIPS"
 col_plastic_generated_per_county = "tons generated in county (2022)"
 df_plastic_generated["FIPS"] = df_plastic_generated["FIPS"].astype(str).str.zfill(5)
