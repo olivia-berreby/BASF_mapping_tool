@@ -10,7 +10,8 @@ from dash import callback_context
 import numpy as np
 import os
 
-os.chdir("myapp")
+# set the current directory to myapp
+# os.chdir("myapp")
 
 
 # Load county geojson data
@@ -48,7 +49,7 @@ col_other_info = "Other relevant information "
 
 # load data on the companies for the pins
 df_companies = pd.read_excel(
-    "data/Copy of Market Analysis Pyrolisis Oil-2.xlsx", sheet_name="USA 2.0"
+    "data/Market Analysis Pyrolisis Oil.xlsx", sheet_name="USA 2.0"
 )
 col_longitude = "Longitude"
 col_latitude = "Latitude"
@@ -56,6 +57,10 @@ col_text = "Text"
 col_company_name = "Company Name"
 col_link = "URL"
 col_address = "Corporate Address"
+col_partnerships = "Existing Parnerships"
+col_feedstock = "Feedstock"
+col_product_service = "Products and Services"
+
 
 df_landfills = pd.read_csv("data/Landfill_v2.csv")
 col_landfill_state = "State"
@@ -142,11 +147,11 @@ app.layout = html.Div(
                                     "value": "companies",
                                 },
                                 {
-                                    "label": "Location of Plastic Landfills",
+                                    "label": "Location of Landfills",
                                     "value": "landfills",
                                 },
                                 {
-                                    "label": "Location of Plastic Landfills - Full in 10 Years",
+                                    "label": "Location of Landfills - Full in 10 Years",
                                     "value": "landfills_10",
                                 },
                             ],
@@ -221,11 +226,11 @@ def update_map(selected_option, selected_pins):
                 "log_plastic_generated": "Plastic Generated (tons) Log Scale",
             },
             hover_data={"County_State": False, col_plastic_generated_per_county: True},
-            custom_data=["County_State"],
+            custom_data=["County_State", col_plastic_generated_per_county],
         )
 
         fig.update_traces(
-            hovertemplate="<b>%{customdata[0]}</b><br>Plastic Generated (tons): %{z}<extra></extra>"
+            hovertemplate="<b>%{customdata[0]}</b><br>Plastic Generated (tons): %{customdata[1]}<extra></extra>"
         )
 
     elif selected_option == "nothing":
@@ -351,17 +356,21 @@ def update_text_box(clickData, selected_pins, selected_map):
                 company_info[col_text] if company_info[col_text] else "No information"
             )
             company_link = company_info[col_link] if company_info[col_link] else "#"
-            corporate_address = company_info[col_address]
 
             return html.Div(
                 [
                     html.H4("Company name:"),
                     html.P(company_name),
+                    html.H4("Feedstock:"),
+                    html.P(company_info[col_feedstock]),
+                    html.H4("Products and Services:"),
+                    html.P(company_info[col_product_service]),
                     html.H4("Company description:"),
                     html.P(company_description),
+                    html.H4("Existing Partnerships:"),
+                    html.P(company_info[col_partnerships]),
                     html.H4("Corporate Address:"),
-                    html.P(corporate_address),
-                    html.H4("Link:"),
+                    html.P(company_info[col_address]),
                     html.A("Visit Website", href=company_link, target="_blank")
                     if company_link != "#"
                     else html.P("No link available"),
