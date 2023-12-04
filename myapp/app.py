@@ -29,14 +29,14 @@ with urlopen(
 # Load data, format; load data, create variables for col names
 
 # Data for plastic generated
-df_plastic_generated = pd.read_excel("data/MASTER_v3.xlsx")
+df_plastic_generated = pd.read_csv("data/plastic_generation_county.csv")
 col_fip_code = "FIPS"
 col_plastic_generated_per_county = "tons generated in county (2022)"
 df_plastic_generated["FIPS"] = df_plastic_generated["FIPS"].astype(str).str.zfill(5)
 
 
 # load data for regulations
-df_regulations = pd.read_excel("data/regulations_v2.xlsx")
+df_regulations = pd.read_excel("data/regulations_information.xlsx")
 col_state = "State"
 col_state_abrv = "State_abbreviation"
 col_rating = "ranking"
@@ -49,7 +49,7 @@ col_other_info = "Other relevant information "
 
 # load data on the companies for the pins
 df_companies = pd.read_excel(
-    "data/Market Analysis Pyrolisis Oil.xlsx", sheet_name="USA 2.0"
+    "data/market_analysis_pyrolisis_oil.xlsx", sheet_name="USA 2.0"
 )
 col_longitude = "Longitude"
 col_latitude = "Latitude"
@@ -62,7 +62,7 @@ col_feedstock = "Feedstock"
 col_product_service = "Products and Services"
 
 
-df_landfills = pd.read_csv("data/Landfill_v2.csv")
+df_landfills = pd.read_csv("data/landfill_information.csv")
 col_landfill_state = "State"
 col_landfill_county = "County"
 col_landfill_lat = "Latitude"
