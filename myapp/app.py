@@ -36,7 +36,7 @@ df_plastic_generated["FIPS"] = df_plastic_generated["FIPS"].astype(str).str.zfil
 
 
 # load data for regulations
-df_regulations = pd.read_excel("data/regulations_information.xlsx")
+df_regulations = pd.read_excel("data/regulations_state.xlsx")
 col_state = "State"
 col_state_abrv = "State_abbreviation"
 col_rating = "ranking"
@@ -331,6 +331,13 @@ def update_map(selected_option, selected_pins):
 
         # Add the scatter plot trace for filtered landfills to the choropleth figure
         fig.add_trace(scattermapbox_trace_10)
+
+    fig.update_layout(
+        coloraxis_colorbar=dict(
+            len=0.8,  # Adjust this value to change the length of the color bar
+            # Other properties like title, ticks can be adjusted here as well
+        )
+    )
 
     fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
     return fig
