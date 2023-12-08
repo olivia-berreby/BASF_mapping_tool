@@ -11,8 +11,7 @@ from dash import callback_context
 import numpy as np
 import os
 
-# set the current directory to myapp, this will be comented out for submission but is needed when running the app on Heroku because the directory needs to be set
-# os.chdir("myapp")
+os.chdir("myapp")
 
 
 # Load county geojson data
