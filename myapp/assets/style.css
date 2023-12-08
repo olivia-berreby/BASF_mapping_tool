@@ -1,68 +1,66 @@
-/* General styling */
+/* General styling for the whole web page */
 body {
     font-family: Arial, sans-serif;
     background-color: white;
-    /* Set the background color of the body to white */
     color: black;
-    /* Set the default text color to black */
 }
 
+/* Layout configuration for the app container */
 .app-container {
     display: grid;
     grid-template-areas:
         "header header"
         "map options";
     grid-template-columns: 3fr 1fr;
+    /* 3:1 ratio for map and options */
     grid-template-rows: auto 1fr;
     gap: 20px;
     padding: 20px;
     height: 100vh;
+    /* Full viewport height */
 }
 
-/* Header styling */
+/* Styling for the header section */
 .header {
     grid-area: header;
     text-align: center;
     background-color: white;
-    /* Set the header background to white */
     color: black;
-    /* Set the header text color to black */
 }
 
+/* Styling for the header title */
 .header-title {
     font-size: 24px;
     margin-bottom: 10px;
 }
 
+/* Styling for the header logo */
 .header-logo {
     height: 3em;
-    /* Adjust height to match text size */
     vertical-align: middle;
-    /* Aligns the image with the text */
 }
 
+/* Styling for the header description */
 .header-description {
     font-size: 18px;
     color: black;
-    /* Ensure the description text is black */
 }
 
-/* Map styling */
+/* Styling for the map area */
 .map {
     grid-area: map;
     width: 100%;
     height: 90%;
-    /* Take full height of its grid area */
 }
 
-/* Options container styling */
+/* Layout for the options container */
 .options-container {
     grid-area: options;
     display: flex;
     flex-direction: column;
 }
 
-/* Options styling */
+/* Styling for the map coloring menu and pin options */
 .map_coloring_menu,
 .pin_options {
     padding: 10px;
@@ -72,13 +70,14 @@ body {
     margin-bottom: 20px;
 }
 
+/* Styling for the text in the map coloring menu and pin options */
 .map_coloring_menu p,
 .pin_options p {
     margin: 10px 0;
     font-weight: bold;
 }
 
-
+/* Styling for the text box */
 .text-box {
     padding: 10px;
     background-color: #f7f7f7;
@@ -86,9 +85,10 @@ body {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     height: 350px;
     overflow: auto;
+    /* Allows scrolling if content overflows */
 }
 
-/* Radio items and checklist styling */
+/* Styling for control elements within Dash Core Components */
 .dcc_control {
     margin-bottom: 10px;
 }

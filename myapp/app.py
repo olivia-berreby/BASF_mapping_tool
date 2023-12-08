@@ -1,3 +1,4 @@
+# import all required packages
 import json
 import dash
 from dash import dcc, html
@@ -10,8 +11,8 @@ from dash import callback_context
 import numpy as np
 import os
 
-# set the current directory to myapp
-os.chdir("myapp")
+# set the current directory to myapp, this will be comented out for submission but is needed when running the app on Heroku because the directory needs to be set
+# os.chdir("myapp")
 
 
 # Load county geojson data
@@ -20,13 +21,14 @@ with urlopen(
 ) as response:
     counties = json.load(response)
 
+# Load the state geoson data
 with urlopen(
     "https://eric.clst.org/assets/wiki/uploads/Stuff/gz_2010_us_040_00_5m.json"
 ) as response:
     states = json.load(response)
 
 
-# Load data, format; load data, create variables for col names
+# Load data, format: load data, create variables for col names, if new column names update them here
 
 # Data for plastic generated
 df_plastic_generated = pd.read_csv("data/plastic_generation_county.csv")
@@ -35,7 +37,7 @@ col_plastic_generated_per_county = "tons generated in county (2022)"
 df_plastic_generated["FIPS"] = df_plastic_generated["FIPS"].astype(str).str.zfill(5)
 
 
-# load data for regulations
+# Data for state regulations
 df_regulations = pd.read_excel("data/regulations_state.xlsx")
 col_state = "State"
 col_state_abrv = "State_abbreviation"
@@ -47,7 +49,7 @@ col_law_sources = "Sources"
 col_other_info = "Other relevant information "
 
 
-# load data on the companies for the pins
+# Data on existing pyrolysis oil companies
 df_companies = pd.read_excel(
     "data/market_analysis_pyrolisis_oil.xlsx", sheet_name="USA 2.0"
 )
@@ -62,6 +64,7 @@ col_feedstock = "Feedstock"
 col_product_service = "Products and Services"
 
 
+# Data on existing landfills in the US
 df_landfills = pd.read_csv("data/landfill_information.csv")
 col_landfill_state = "State"
 col_landfill_county = "County"
@@ -75,12 +78,17 @@ col_landfill_waste = "Waste in Place (tons)"
 col_landfill_acceptance = "Annual Waste Acceptance Rate (tons per year)"
 col_landfill_available = "Percent Available"
 col_landfill_volume_design = "Designed Volume (acres^3)"
+df_landfills[col_landfill_years_to_fill] = df_landfills[
+    col_landfill_years_to_fill
+].where(~pd.isna(df_landfills[col_landfill_years_to_fill]), "click for more info")
 
 
-# Use CSS for style
+# Link css style sheet to the web page
 app = dash.Dash(__name__, external_stylesheets=["/assets/style.css"])
 server = app.server
 
+# Following code established the layout of the website
+# The layout includes the header and header description at the top; the options to modify the interactive map on the right; and the map in the center-left.
 app.layout = html.Div(
     className="app-container",
     children=[
@@ -90,13 +98,11 @@ app.layout = html.Div(
                     children=[
                         html.Img(
                             src=app.get_asset_url("images/icons/BASF logo.jpg"),
-                            className="header-logo",  # Assigning a class name
+                            className="header-logo",
                         ),
                         html.Span(
-                            " Strategic Mapping Tool",  # Keep the rest of the title as text
-                            style={
-                                "verticalAlign": "middle"
-                            },  # Align text with the image
+                            " Strategic Mapping Tool",
+                            style={"verticalAlign": "middle"},
                         ),
                     ],
                     className="header-title",
@@ -108,7 +114,7 @@ app.layout = html.Div(
             ],
             className="header",
         ),
-        html.Div(  # Options container
+        html.Div(  # Options container, the menu with all info to click for the map
             className="options-container",
             children=[
                 html.Div(  # Map coloring options
@@ -159,12 +165,10 @@ app.layout = html.Div(
                         ),
                     ],
                 ),
-                html.Div(  # New text box
+                html.Div(
                     id="text_box",
                     className="text-box",
-                    children=[
-                        # Content for the text box can be added here
-                    ],
+                    children=[],
                 ),
             ],
         ),
@@ -178,12 +182,19 @@ app.layout = html.Div(
 )
 
 
+# The following is the app callback, so the code that handles updating the map when options are clicked, coloring the map and updating the pins that are displayed.
 @app.callback(
-    Output("us-map", "figure"),
-    [Input("map_color", "value")],
-    [Input("pin-checklist", "value")],
+    Output("us-map", "figure"),  # output is always the map
+    [
+        Input("map_color", "value")
+    ],  # input, the map_coloring in the form of the ONE option selected in the dcc.RadioItems
+    [
+        Input("pin-checklist", "value")
+    ],  # input the pins displayed through which MULTIPLE options selected in the dcc.Checklist
 )
+# function that updates the map, will be used when any new option is selected
 def update_map(selected_option, selected_pins):
+    # Change color to regulations per state according to our rating -1, 0, 1.
     if selected_option == "regulations_state":
         fig = px.choropleth_mapbox(
             df_regulations,
@@ -201,7 +212,7 @@ def update_map(selected_option, selected_pins):
 
         fig.update_traces(hovertemplate="<b>%{properties.NAME}</b><extra></extra>")
 
-    # change color plastic generated, with hover information per state
+    # Change color to plastic generated by county, with hover information per county
     elif selected_option == "plastic_generated_county":
         df_plastic_generated["County_State"] = (
             df_plastic_generated["County"] + ", " + df_plastic_generated["State"]
@@ -233,6 +244,7 @@ def update_map(selected_option, selected_pins):
             hovertemplate="<b>%{customdata[0]}</b><br>Plastic Generated (tons): %{customdata[1]}<extra></extra>"
         )
 
+    # have no coloring, using the county data, hover over an get county info, but opacity set the zero for no coloring
     elif selected_option == "nothing":
         df_plastic_generated["County_State"] = (
             df_plastic_generated["County"] + ", " + df_plastic_generated["State"]
@@ -247,19 +259,11 @@ def update_map(selected_option, selected_pins):
             zoom=3.2,
             center={"lat": 37.0902, "lon": -95.7129},
             opacity=0,
-            labels={
-                col_plastic_generated_per_county: "Plastic Recycled (tons)",
-                "log_plastic_generated": "Plastic Recycled (tons) Log Scale",
-            },
-            hover_data={"County_State": False, col_plastic_generated_per_county: True},
             custom_data=["County_State"],
         )
 
-        fig.update_traces(
-            hovertemplate="<b>%{customdata[0]}</b><br>Plastic Recycled (tons): %{z}<extra></extra>"
-        )
-
-        # Hide the legend
+        fig.update_traces(hovertemplate="<b>%{customdata[0]}</b><extra></extra>")
+        # hide legend
         fig.update_layout(showlegend=False)
 
     # Add company pins if selected in the checklist
@@ -277,8 +281,9 @@ def update_map(selected_option, selected_pins):
         # Add the scatter plot trace to the choropleth figure
         fig.add_trace(scattermapbox_trace)
 
+    # create a function to have a color scale for the landfills
     def get_color_scale(value):
-        if pd.isna(value):
+        if isinstance(value, str):
             return "darkgrey"  # Dark grey for NaN values
         elif value < 10:
             return "red"  # Red for less than 10 years
@@ -287,6 +292,7 @@ def update_map(selected_option, selected_pins):
         else:
             return "green"  # Green for 20 years or more
 
+    # plot the landfills, with the color scale
     if "landfills" in selected_pins:
         landfill_colors = df_landfills[col_landfill_years_to_fill].apply(
             get_color_scale
@@ -307,13 +313,16 @@ def update_map(selected_option, selected_pins):
 
         # Add the scatter plot trace to the choropleth figure
         fig.add_trace(scattermapbox_trace)
-
+    # Temporarily convert the column to numeric for comparison, coercing errors to NaN
+    temp_numeric_series = pd.to_numeric(
+        df_landfills[col_landfill_years_to_fill], errors="coerce"
+    )
+    # Perform the comparison on numeric values only
+    less_than_10_years_mask = temp_numeric_series < 10
     # Plot for landfills with less than 10 years to fill or closure
-
     if "landfills_10" in selected_pins:
         filtered_landfills = df_landfills[
-            (df_landfills[col_landfill_years_to_fill] < 10)
-            | (df_landfills[col_landfill_planned_closure] < 10)
+            less_than_10_years_mask | (df_landfills[col_landfill_planned_closure] < 10)
         ]
 
         scattermapbox_trace_10 = go.Scattermapbox(
@@ -332,10 +341,10 @@ def update_map(selected_option, selected_pins):
         # Add the scatter plot trace for filtered landfills to the choropleth figure
         fig.add_trace(scattermapbox_trace_10)
 
+    # General update of the map, size of the color bar and margins
     fig.update_layout(
         coloraxis_colorbar=dict(
-            len=0.8,  # Adjust this value to change the length of the color bar
-            # Other properties like title, ticks can be adjusted here as well
+            len=0.8,
         )
     )
 
@@ -343,27 +352,37 @@ def update_map(selected_option, selected_pins):
     return fig
 
 
+# other callback function that updates the text box in the bottom right, so all info when clicked on items on the map
 @app.callback(
     Output("text_box", "children"),
     [Input("us-map", "clickData")],
     [State("pin-checklist", "value"), State("map_color", "value")],
 )
+# Function for updating the text box based on user interactions with a map
 def update_text_box(clickData, selected_pins, selected_map):
+    # Check if there is any click data to process
     if clickData:
+        # Extract the first point of click data
         points = clickData.get("points", [{}])
         first_point = points[0]
+        # Retrieve the text associated with the clicked point
         text_data = first_point.get("text", None)
 
+        # If the clicked point is a company, display company information
         if text_data and text_data.startswith("Company:"):
+            # Extract the company name from the clicked point
             company_name = text_data.split(": ", 1)[1]
+            # Retrieve company information from a dataframe
             company_info = df_companies[
                 df_companies[col_company_name] == company_name
             ].iloc[0]
+            # Prepare the company information to be displayed
             company_description = (
                 company_info[col_text] if company_info[col_text] else "No information"
             )
             company_link = company_info[col_link] if company_info[col_link] else "#"
 
+            # Return a layout of HTML elements containing the company information
             return html.Div(
                 [
                     html.H4("Company name:"),
@@ -384,7 +403,9 @@ def update_text_box(clickData, selected_pins, selected_map):
                 ]
             )
 
+        # If the clicked point is a landfill, display landfill information
         elif text_data and text_data.startswith("Landfill:"):
+            # Extract and process landfill information from the clicked point
             _, landfill_text = text_data.split(": ", 1)
             county, years_to_fill_text = landfill_text.split(", Years to fill: ")
             landfill_info = df_landfills[
@@ -395,8 +416,10 @@ def update_text_box(clickData, selected_pins, selected_map):
                 )
             ]
 
+            # Check if the landfill information is found and prepare it for display
             if not landfill_info.empty:
                 landfill_info = landfill_info.iloc[0]
+                # Return HTML display of the landfills
                 return html.Div(
                     [
                         html.H4("Location:"),
@@ -424,10 +447,14 @@ def update_text_box(clickData, selected_pins, selected_map):
             else:
                 return html.Div([html.P("Landfill information not found.")])
 
+        # If the selected map is for state regulations and a state is clicked, display state information
         elif selected_map == "regulations_state" and first_point.get("location", None):
+            # Extract the state name from the clicked point
             state_name = first_point["location"]
+            # Retrieve state information from a dataframe
             state_info = df_regulations[df_regulations[col_state] == state_name].iloc[0]
 
+            # Return a layout of HTML elements containing the state information
             return html.Div(
                 [
                     html.H4("State:"),
@@ -445,8 +472,10 @@ def update_text_box(clickData, selected_pins, selected_map):
                 ]
             )
 
-    return ""  # Default return for other cases or no interaction
+    # Default return if no valid click data is found
+    return ""
 
 
+# Run app
 if __name__ == "__main__":
     app.run_server(debug=True)
